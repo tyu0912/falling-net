@@ -2,7 +2,6 @@ import sys
 sys.path.insert(1, '/temporal-shift-module/online_demo')
 
 from mobilenet_v2_tsm_test import MobileNetV2
-#from arch_mobilenetv2 import MobileNetV2
 
 from PIL import Image
 import urllib.request
@@ -16,7 +15,6 @@ import torch.nn as nn
 
 from matplotlib import pyplot as plt
 from twilio.rest import Client
-
 
 
 class GroupScale(object):
@@ -140,53 +138,7 @@ def process_output(idx_, history, num_classes):
 
 def get_categories(num_classes):
 
-    if num_classes == 27:
-        catigories = [
-        "Doing other things",  # 0
-        "Drumming Fingers",  # 1
-        "No gesture",  # 2
-        "Pulling Hand In",  # 3
-        "Pulling Two Fingers In",  # 4
-        "Pushing Hand Away",  # 5
-        "Pushing Two Fingers Away",  # 6
-        "Rolling Hand Backward",  # 7
-        "Rolling Hand Forward",  # 8
-        "Shaking Hand",  # 9
-        "Sliding Two Fingers Down",  # 10
-        "Sliding Two Fingers Left",  # 11
-        "Sliding Two Fingers Right",  # 12
-        "Sliding Two Fingers Up",  # 13
-        "Stop Sign",  # 14
-        "Swiping Down",  # 15
-        "Swiping Left",  # 16
-        "Swiping Right",  # 17
-        "Swiping Up",  # 18
-        "Thumb Down",  # 19
-        "Thumb Up",  # 20
-        "Turning Hand Clockwise",  # 21
-        "Turning Hand Counterclockwise",  # 22
-        "Zooming In With Full Hand",  # 23
-        "Zooming In With Two Fingers",  # 24
-        "Zooming Out With Full Hand",  # 25
-        "Zooming Out With Two Fingers"  # 26
-    ]
-
-    elif num_classes == 9: 
-
-        catigories = ["Fall", "SalsaSpin", "Taichi", "WallPushups", "WritingOnBoard", "Archery", "Hulahoop", "Nunchucks", "WalkingWithDog"]
-    
-    elif num_classes == 10:
-
-        catigories = ["Test", "Fall", "SalsaSpin", "Taichi", "WallPushups", "WritingOnBoard", "Archery", "Hulahoop", "Nunchucks", "WalkingWithDog"]
-
-    elif num_classes == 3 :
-
-        catigories = ['Test', "Fall", "Not Fall"]
-
-    elif num_classes == 2:
-
-        catigories = ["Fall", "Not Fall"]
-
+    catigories = ['Test', "Fall", "Not Fall"]
 
     return catigories
 
@@ -202,8 +154,6 @@ def main(num_classes):
     print("HISTORY_LOGIT = " + str(HISTORY_LOGIT))
     print("CAMERA_FEED = " + str(CAMERA_FEED))
     print("TWILIO_ALERTS = " + str(SEND_ALERTS))
-
-
 
     if num_classes not in [2, 3, 9, 10, 27]:
         return "Can only handle 2, 3, 9, 10 (Fall) and 27 classes (Gesture)"
@@ -228,50 +178,33 @@ def main(num_classes):
     torch_module = MobileNetV2(n_class=num_classes)
     #print(torch_module.state_dict().keys())
 
-    if num_classes == 27:
-        if not os.path.exists("mobilenetv2_jester_online.pth.tar"):  # checkpoint not downloaded
-            print('Downloading PyTorch checkpoint...')
-            url = 'https://hanlab.mit.edu/projects/tsm/models/mobilenetv2_jester_online.pth.tar'
-            urllib.request.urlretrieve(url, './mobilenetv2_jester_online.pth.tar')
+    model_new = torch.load("../../pretrained/2cat/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
+
+    # Fixing new model parameter mis-match
+    state_dict = model_new['state_dict']
     
+    #print(state_dict.keys())
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
 
-        torch_module.load_state_dict(torch.load("mobilenetv2_jester_online.pth.tar"))
+    for k, v in state_dict.items():
+        #name = k[7:] # remove `module.`
 
+        if "module.base_model." in k:
+            name = k.replace("module.base_model.", "")
 
-    else:
-        
-        if num_classes == 9 or num_classes == 10:
-            model_new = torch.load("../../pretrained/9cat/ckpt.best.pth.tar")
-    
-        elif num_classes == 2 or num_classes == 3:
-            model_new = torch.load("../../pretrained/2cat/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
-            #model_new = torch.load("../../pretrained/2cat/ckpt.best.pth.tar")
-
-        # Fixing new model parameter mis-match
-        state_dict = model_new['state_dict']
-        #print(state_dict.keys())
-    
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-
-        for k, v in state_dict.items():
-            #name = k[7:] # remove `module.`
-
-            if "module.base_model." in k:
-                name = k.replace("module.base_model.", "")
-
-                if ".net" in name:
-                    name = name.replace(".net", "")
+            if ".net" in name:
+                name = name.replace(".net", "")
 
 
-            elif "module." in k:
-                name = k.replace("module.new_fc.", "classifier.")
+        elif "module." in k:
+            name = k.replace("module.new_fc.", "classifier.")
         
 
-            new_state_dict[name] = v
+        new_state_dict[name] = v
 
-        # load params
-        torch_module.load_state_dict(new_state_dict)
+    # load params
+    torch_module.load_state_dict(new_state_dict)
 
     # Use GPU if CUDA found
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -519,14 +452,14 @@ if __name__ == "__main__":
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
     if alert and SEND_ALERTS:
-        account_sid = 'ACdbfaa05b13c92b8c951ab45088604ad3'
-        auth_token = '54093a9c451d4237cfcbf9f86deeb34a'
+        account_sid = '<twilio_account_sid>'
+        auth_token = '<twilio_account_token>'
         client = Client(account_sid, auth_token)
 
         message = client.messages.create(
              body='It seems you have fallen. Emergency professionals are on their way',
-            from_='+14154803682',
-            to='+12483858969'
+            from_='<twilio_from_number>',
+            to='<twilio_to_number>'
         )
 
         print(message.sid)
