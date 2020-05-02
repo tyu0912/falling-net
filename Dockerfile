@@ -12,14 +12,20 @@ RUN pip3 install urllib3
 RUN pip3 install twilio
 RUN pip3 install matplotlib
 
-RUN git clone https://github.com/mit-han-lab/temporal-shift-module.git
-
-WORKDIR /temporal-shift-module
-
-RUN mkdir dev_files
-RUN mkdir pretrained
-
-COPY pretrained /temporal-shift-module/pretrained
-
 RUN apt-get install -y libopencv-dev python3-opencv
+
+RUN mkdir /app
+
+COPY main.py /app
+COPY models /app
+
+CMD ['python', 'main.py']
+
+#RUN git clone https://github.com/mit-han-lab/temporal-shift-module.git
+#WORKDIR /temporal-shift-module
+
+#RUN mkdir dev_files
+#RUN mkdir pretrained
+
+#COPY pretrained /temporal-shift-module/pretrained
 

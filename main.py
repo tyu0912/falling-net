@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1, '/temporal-shift-module/online_demo')
+sys.path.insert(1, '/app/models/')
 
 from mobilenet_v2_tsm_test import MobileNetV2
 
@@ -178,7 +178,7 @@ def main(num_classes):
     torch_module = MobileNetV2(n_class=num_classes)
     #print(torch_module.state_dict().keys())
 
-    model_new = torch.load("../../pretrained/2cat/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
+    model_new = torch.load("/app/models/weights/ckpt.best.pth.tar")
 
     # Fixing new model parameter mis-match
     state_dict = model_new['state_dict']
