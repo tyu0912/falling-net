@@ -1,0 +1,49 @@
+w251fall: 3 classes
+=> shift: True, shift_div: 8, shift_place: blockres
+
+    Initializing TSN with base model: mobilenetv2.
+    TSN Configurations:
+        input_modality:     RGB
+        num_segments:       8
+        new_length:         1
+        consensus_module:   avg
+        dropout_ratio:      0.8
+        img_feature_dim:    256
+            
+=> base model: mobilenetv2
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using fold div: 8
+=> Using dense sample for the dataset...
+video number:295
+video 0 done, total 0/295, average 4.946 sec/video, moving Prec@1 100.000 Prec@2 100.000
+video 40 done, total 40/295, average 0.393 sec/video, moving Prec@1 97.619 Prec@2 100.000
+video 80 done, total 80/295, average 0.345 sec/video, moving Prec@1 97.561 Prec@2 100.000
+video 120 done, total 120/295, average 0.330 sec/video, moving Prec@1 98.361 Prec@2 100.000
+video 160 done, total 160/295, average 0.335 sec/video, moving Prec@1 98.765 Prec@2 100.000
+video 200 done, total 200/295, average 0.330 sec/video, moving Prec@1 99.010 Prec@2 100.000
+video 240 done, total 240/295, average 0.323 sec/video, moving Prec@1 99.174 Prec@2 100.000
+video 280 done, total 280/295, average 0.313 sec/video, moving Prec@1 99.291 Prec@2 100.000
+
+
+video_pred_top5:
+ [array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([2, 1, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([1, 2, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([1, 2, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0]), array([2, 1, 0])]
+
+
+video_labels:
+ [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+Confusion Matrix:
+ [[ 29.   1.]
+ [  1. 264.]]
+[0.96666667 0.99622642]
+upper bound: 0.9814465408805031
+-----Evaluation is finished------
+Class Accuracy 98.14%
+Overall Prec@1 99.32% Prec@5 100.00%
