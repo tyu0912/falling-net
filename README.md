@@ -1,5 +1,7 @@
 # Falling Net
 
+![](fall.gif)
+
 ## Introduction
 Falls are one of the leading causes of injury in older persons. With around 27,000 seniors succumbing annually due to falls, there is a glaring need to confront this issue. We created an adaption of the Temporal Shift Module developed by the MIT HAN Lab to detect human falls, assessing the feasibility for a home camera system to detect falls as they occur.
 
