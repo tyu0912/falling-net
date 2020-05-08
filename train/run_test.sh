@@ -1,0 +1,1 @@
+python test_models.py w251fall --weights=/data/w251fall/checkpoints/TSM_w251fall_RGB_resnet50_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar --test_segments=8 --batch_size=16 -j 16 --test_crops=3 --twice_sample --gpus=2 --workers=1 --csv_file=./foo.csv --test_list=/data/w251fall/file_list/w251fall_rgb_val_split_1.txt
