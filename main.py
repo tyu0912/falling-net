@@ -1,7 +1,8 @@
 import sys
-sys.path.insert(1, '/app/models/')
 
+sys.path.insert(1, './models')
 from mobilenet_v2_tsm_test import MobileNetV2
+#from arch_mobilenetv2 import MobileNetV2
 
 from PIL import Image
 import urllib.request
@@ -12,9 +13,11 @@ import numpy as np
 import cv2
 import time
 import torch.nn as nn
+import argparse
 
 from matplotlib import pyplot as plt
 from twilio.rest import Client
+
 
 
 class GroupScale(object):
@@ -135,14 +138,6 @@ def process_output(idx_, history, num_classes):
 
     return history[-1], history
 
-
-def get_categories(num_classes):
-
-    catigories = ['Test', "Fall", "Not Fall"]
-
-    return catigories
-
-
 def main(num_classes):
 
     print("Initializing model...")
@@ -155,11 +150,32 @@ def main(num_classes):
     print("CAMERA_FEED = " + str(CAMERA_FEED))
     print("TWILIO_ALERTS = " + str(SEND_ALERTS))
 
-    if num_classes not in [2, 3, 9, 10, 27]:
-        return "Can only handle 2, 3, 9, 10 (Fall) and 27 classes (Gesture)"
 
-    else:
-        catigories = get_categories(num_classes)
+    # Print params for alert
+    font                   = cv2.FONT_HERSHEY_COMPLEX
+    bottomLeftCornerOfText = (450,950)
+    fontScale              = 4
+    fontColor              = (0,0,250)
+    lineType               = 8
+
+    # Print params for softmaxes
+    font2                   = cv2.FONT_HERSHEY_SIMPLEX 
+    topRightCornerOfText = (10,50)
+    topRightCornerOfText2 = (10,100)
+    fontScale2              = 2
+    fontColor2 = (250,0,0)
+    lineType2 = 2
+
+
+    if CAMERA_FEED:
+        topRightCornerOfText = (5,50)
+        topRightCornerOfText2 = (5,70)
+        fontScale2              = 0.5
+        bottomLeftCornerOfText = (10,150)
+        fontScale = 1
+
+
+    categories = ['Test', "Fall", "Not Fall"]
 
     cropping = torchvision.transforms.Compose([
         GroupScale(256),
@@ -177,13 +193,12 @@ def main(num_classes):
 
     torch_module = MobileNetV2(n_class=num_classes)
     #print(torch_module.state_dict().keys())
-
-    model_new = torch.load("/app/models/weights/ckpt.best.pth.tar")
+    model_new = torch.load("./models/weights/ckpt.best.pth.tar")
 
     # Fixing new model parameter mis-match
     state_dict = model_new['state_dict']
-    
     #print(state_dict.keys())
+
     from collections import OrderedDict
     new_state_dict = OrderedDict()
 
@@ -199,7 +214,7 @@ def main(num_classes):
 
         elif "module." in k:
             name = k.replace("module.new_fc.", "classifier.")
-        
+    
 
         new_state_dict[name] = v
 
@@ -219,8 +234,9 @@ def main(num_classes):
 
     if CAMERA_FEED:
         cap = cv2.VideoCapture(1)
+        print("CAMERA")
     else:
-        cap = cv2.VideoCapture('./zorian_0965.train.avi') 
+        cap = cv2.VideoCapture(VIDEO_PATH) 
 
 
     # set a lower resolution for speed up
@@ -230,7 +246,7 @@ def main(num_classes):
     
     full_screen = False
     cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WINDOW_NAME, 640, 480)
+    cv2.resizeWindow(WINDOW_NAME, 480, 480)
     cv2.moveWindow(WINDOW_NAME, 0, 0)
     cv2.setWindowTitle(WINDOW_NAME, WINDOW_NAME)
 
@@ -254,152 +270,156 @@ def main(num_classes):
     history_logit = []
     history_timing = []
     i_frame = -1
-    tracker = {c:0 for c in catigories}
     history_for_alerts = []
+    frame_counter = {c:0 for c in categories}
 
     fall_frame_count = 0
     running_preds = []
     idx_ = 2 # initialize to NotFall
     state = "normal"
-
+    softmax = []
     while True:
         
         i_frame += 1
         _, img = cap.read()  # (480, 640, 3) 0 ~ 255
 
-        if i_frame % 2 == 0:
-            t1 = time.time()
-            img_tran = transform([Image.fromarray(img).convert('RGB')])
-            input_var = torch.autograd.Variable(img_tran.view(1, 3, img_tran.size(1), img_tran.size(2)))
+        t1 = time.time()
+        img_tran = transform([Image.fromarray(img).convert('RGB')])
+        input_var = torch.autograd.Variable(img_tran.view(1, 3, img_tran.size(1), img_tran.size(2)))
 
-            # Send tensor to GPU
-            input_var = input_var.to(device)
-            #shift_buffer = shift_buffer.to(device)
+        # Send tensor to GPU
+        input_var = input_var.to(device)
+        #shift_buffer = shift_buffer.to(device)
 
-            prediction = torch_module(input_var, *shift_buffer) #remove *shift_buffer if using arch mobilenet
+        prediction = torch_module(input_var, *shift_buffer) #remove *shift_buffer if using arch mobilenet
 
-            feat, shift_buffer = prediction[0], prediction[1:]
+        feat, shift_buffer = prediction[0], prediction[1:]
 
-            coefs = feat.cpu().detach().numpy() # Move tensor back to CPU to process numpy arrays
-            coefs2 = coefs.copy()
+        coefs = feat.cpu().detach().numpy() # Move tensor back to CPU to process numpy arrays
+        coefs2 = coefs.copy()            
 
-            # Check 
-            if SOFTMAX_THRES > 0:
-          
-                feat_np = coefs2.reshape(-1)
-
-                print(feat_np)
-
-                feat_np -= feat_np.max()
-                softmax = np.exp(feat_np) / np.sum(np.exp(feat_np))
-                
-                print(softmax)
-
-                if max(softmax) > SOFTMAX_THRES:
-                    
-                    idx_ = np.argmax(feat.cpu().detach().numpy())
-
-                    #print("GOT SOFTMAX > 0.7")
+        # Check 
+        if SOFTMAX_THRES > 0:
         
-                else:
-                    idx_ = idx
-    
-            else:                
-                idx_ = np.argmax(feat.cpu().detach().numpy()[0]) # For demo mobilenet
-                #idx_ = np.argmax(feat.cpu().detach().numpy()) # For archnet mobilenet
+            feat_np = coefs2.reshape(-1)
 
-                #coefs2 = coefs.copy()
-                #print("coefs = " + str(coefs))
+            #print(feat_np)
 
-                #feat_np = coefs2.reshape(-1)
-                #feat_np -= feat_np.max()
-
-                #softmax = np.exp(feat_np) / np.sum(np.exp(feat_np))
-
-
-            #print("The softmax = " + str(np.round(softmax,2)))
-
-
-            if HISTORY_LOGIT:
-                history_logit.append(feat.cpu().detach().numpy())
-                history_logit = history_logit[-int(12/27*num_classes):]
-                avg_logit = sum(history_logit)
-                idx_ = np.argmax(avg_logit, axis=1)[0] # For demo mobilenet
-                #idx_ = np.argmax(avg_logit)  # For archnet mobilenet
-
-            idx, history = process_output(idx_, history, num_classes)
-
-            t2 = time.time()
+            feat_np -= feat_np.max()
+            softmax = np.exp(feat_np) / np.sum(np.exp(feat_np))
             
-            print(f"Prediction @ Frame {index} : {catigories[np.argmax(feat.cpu().detach().numpy())]}")
-            print("Status: " + str(catigories[idx]))
-            
+            #print(np.round(softmax,2))
 
-            running_preds.append(idx)
-            current_time = t2 - t1
-
-            # ALERT Logic 1: If more than 5 Falls captured in last 7 values
-            if len(running_preds) > 7:
-                #print("last 7: " + str(running_preds[-7::]))
-                #print(running_preds[-7::])
-
-                running_preds.pop(0)
-                fall_counts = running_preds.count(1)
-
-                if fall_counts < 3 and state == "warning":
-                    print("RETURNED TO NORMAL STATE")
-                    state = "normal"
-
-                elif fall_counts >=3 and fall_counts <= 5:
-                    
-                    if state == "normal":
-                        print("WARNING: POTENTIAL FALL DETECTED")
-                    
-                    state = "warning"
+            if max(softmax) > SOFTMAX_THRES:
                 
-                elif fall_counts > 5:
-                    print("5 of last 7 frames were falls")
-                    print("ALERT! FALL HAS HAPPENED!!")
-                    
-                    return True
+                idx_ = np.argmax(feat.cpu().detach().numpy())
+
+                #print("GOT SOFTMAX > 0.7")
+    
+            else:
+                idx_ = idx
+
+        else:                
+            idx_ = np.argmax(feat.cpu().detach().numpy()[0]) # For demo mobilenet
+
+
+
+        if HISTORY_LOGIT:
+            history_logit.append(feat.cpu().detach().numpy())
+            history_logit = history_logit[-int(12/27*num_classes):]
+            avg_logit = sum(history_logit)
+            idx_ = np.argmax(avg_logit, axis=1)[0] # For demo mobilenet
+            #idx_ = np.argmax(avg_logit)  # For archnet mobilenet
+
+        idx, history = process_output(idx_, history, num_classes)
+
+        t2 = time.time()
+        
+        current_status = categories[idx]
+        print(f"Prediction @ Frame {index} : {categories[np.argmax(feat.cpu().detach().numpy())]}")
+        print("Status: " + str(current_status))
+        
+
+        running_preds.append(idx)
+        current_time = t2 - t1
+
+        fall_prob = round(softmax[1],2)
+        notfall_prob = round(softmax[2],2)
+        
+        # Display fall/not fall softmax probabilites
+        cv2.putText(img, 'fall: ' + str(fall_prob), topRightCornerOfText, font2, fontScale2, fontColor2, lineType2)
+        cv2.putText(img, 'not fall: ' + str(notfall_prob), topRightCornerOfText2, font2, fontScale2, fontColor2, lineType2)
+
+
+        # If fall is detected, display warning
+        if idx == 1:
+            cv2.putText(img,'FALL DETECTED', bottomLeftCornerOfText, font, fontScale, fontColor, lineType)
+
+
+        # ALERT Logic 1: If more than 5 Falls captured in last 7 values
+        if len(running_preds) > 7:
+            running_preds.pop(0)
+            fall_counts = running_preds.count(1)
+
+            if fall_counts < 3 and state == "warning":
+                print("RETURNED TO NORMAL STATE")
+                state = "normal"
+
+            elif fall_counts >=3 and fall_counts <= 5:
+                
+                if state == "normal":
+                    print("WARNING: POTENTIAL FALL DETECTED")
+                
+                state = "warning"
+            
+            elif fall_counts > 5:
+                print("5 of last 7 frames were falls")
+                print("ALERT! FALL HAS HAPPENED!!")
+                
+                return True
 
         
         print("")
 
-        # ALERT Logic 2 (Inactive): This is to send alerts if number of falls > 0.95*27 (num gesture classes)
-        # if len(history_for_alerts) > 25:
-        #    history_for_alerts.pop(0)
-
-        # history_for_alerts.append(catigories[idx])
-
-        # if history_for_alerts.count("Fall") > int(0.95*27):
-        #    return True
-
 
         # This is to show the camera image and prediction
-        img = cv2.resize(img, (640, 480))
-        img = img[:, ::-1]
-        height, width, _ = img.shape
-        label = np.zeros([height // 10, width, 3]).astype('uint8') + 255
-
-        cv2.putText(label, 'Prediction: ' + catigories[idx], (0, int(height / 16)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-        cv2.putText(label, 'FR: {:.1f} f/s'.format(1 / current_time), (int((width-170)/2), int(height / 16)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-        cv2.putText(label, 'F#: {:.1f} '.format(i_frame), (width - 170, int(height / 16)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-
-        img = np.concatenate((img, label), axis=0)
+        img = cv2.resize(img, (480, 480))
+        #img = img[:, ::-1]
 
         # This is to also how the graph to track the labels
-        if track_labels:
-            tracker[catigories[idx]] += 1
+        if TRACK_LABELS:
+            #tracker[categories[idx]] += 1
+            #tracker = {c:0 for c in categories}
+            #print(tracker)            
+            tracker = None
+            tracker = {}
+            for i in range(num_classes):                 
+                tracker[categories[i]] = softmax[i]
 
-            fig, ax = plt.subplots()
-            plt.bar(tracker.keys(), tracker.values())
+            # Count frames
+            frame_counter[categories[idx]] += 1
+
+            # Set figures
+            fig, (ax1, ax2) = plt.subplots(1,2)
+            fig.tight_layout(pad=5.0)
+
+            # Plot graphs
+            ax1.bar(tracker.keys(), tracker.values(), color="red")
+            ax1.set_title("Frame Probability Distribution")
+            ax1.set_ylabel("# of Frames", fontsize=10)
+
+            ax2.bar(frame_counter.keys(), frame_counter.values(), color="blue")
+            ax2.set_title("Total Frame Counts")
+            ax2.set_ylabel("Probability", fontsize=10)
+
             plt.savefig('plot_fig.png')
 
             img_plot = cv2.imread('plot_fig.png')
             img_plot = cv2.resize(img_plot, (img.shape[1], img.shape[0]))
-            img = np.hstack((img, img_plot))
+            img = np.vstack((img, img_plot))
 
+
+        #cv2.imwrite("./frames/esh_" + str(i_frame) +".jpg", img)
         cv2.imshow(WINDOW_NAME, img)
 
         key = cv2.waitKey(1)
@@ -437,13 +457,34 @@ def main(num_classes):
 if __name__ == "__main__":
     print("Starting... \n")
 
-    SOFTMAX_THRES = 0.7
+    parser = argparse.ArgumentParser(description="TSM testing")
+    parser.add_argument('--video', type=str, default=None)
+
+    args = parser.parse_args()
+
+    
+
+    SOFTMAX_THRES = 0.8
     HISTORY_LOGIT = False
     REFINE_OUTPUT = False
     WINDOW_NAME = "GESTURE CAPTURE"
-    track_labels = True
+    TRACK_LABELS = False
     CAMERA_FEED = True
     SEND_ALERTS = False
+    VIDEO_PATH = ""
+    
+    if args.video is not None:
+        VIDEO_PATH = args.video
+        CAMERA_FEED = False
+
+    else:
+        CAMERA_FEED = True
+
+
+
+    print("VIDEO_PATH = " + VIDEO_PATH)
+    
+    
 
 
     #Modify number of classes here
@@ -452,14 +493,14 @@ if __name__ == "__main__":
     # Your Account Sid and Auth Token from twilio.com/console
     # DANGER! This is insecure. See http://twil.io/secure
     if alert and SEND_ALERTS:
-        account_sid = '<twilio_account_sid>'
-        auth_token = '<twilio_account_token>'
+        account_sid = 'ACdbfaa05b13c92b8c951ab45088604ad3'
+        auth_token = '54093a9c451d4237cfcbf9f86deeb34a'
         client = Client(account_sid, auth_token)
 
         message = client.messages.create(
-             body='It seems you have fallen. Emergency professionals are on their way',
-            from_='<twilio_from_number>',
-            to='<twilio_to_number>'
+            body='It seems you have fallen. Emergency professionals are on their way',
+            from_='',
+            to=''
         )
 
         print(message.sid)
