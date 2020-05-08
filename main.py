@@ -193,7 +193,7 @@ def main(num_classes):
 
     torch_module = MobileNetV2(n_class=num_classes)
     #print(torch_module.state_dict().keys())
-    model_new = torch.load("./models/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
+    model_new = torch.load("./models/weights/ckpt.best.pth.tar")
 
     # Fixing new model parameter mis-match
     state_dict = model_new['state_dict']
