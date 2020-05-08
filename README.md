@@ -17,13 +17,13 @@ Falls are one of the leading causes of injury in older persons. With around 27,0
 ```
 docker built -t tsm_test1 .
 
-sudo docker run --privileged -v $(pwd)/dev_files:/temporal-shift-module/dev_files -v /dev/bus/usb:/dev/bus/usb -v /tmp:/tmp -e QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -it tsm_test1 bash
+docker run --privileged -v $(pwd):/falling -v /dev/bus/usb:/dev/bus/usb -v /tmp:/tmp -e QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -it falling_net bash
 ```
 
 2. The demo script can be run either using the camera feed or using a local video
 
 ```
-python main.py --video <path_to_vid>
+python3 main.py --video ./test_video/test_fail.avi
 ```
 
-To use the camera, please exclude the `--file` option
+To use the camera, please exclude the `--video` option
