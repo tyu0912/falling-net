@@ -2,7 +2,6 @@ import sys
 
 sys.path.insert(1, './models')
 from mobilenet_v2_tsm_test import MobileNetV2
-
 #from arch_mobilenetv2 import MobileNetV2
 
 from PIL import Image
@@ -14,6 +13,7 @@ import numpy as np
 import cv2
 import time
 import torch.nn as nn
+import argparse
 
 from matplotlib import pyplot as plt
 from twilio.rest import Client
@@ -138,60 +138,6 @@ def process_output(idx_, history, num_classes):
 
     return history[-1], history
 
-
-def get_categories(num_classes):
-
-    if num_classes == 27:
-        catigories = [
-        "Doing other things",  # 0
-        "Drumming Fingers",  # 1
-        "No gesture",  # 2
-        "Pulling Hand In",  # 3
-        "Pulling Two Fingers In",  # 4
-        "Pushing Hand Away",  # 5
-        "Pushing Two Fingers Away",  # 6
-        "Rolling Hand Backward",  # 7
-        "Rolling Hand Forward",  # 8
-        "Shaking Hand",  # 9
-        "Sliding Two Fingers Down",  # 10
-        "Sliding Two Fingers Left",  # 11
-        "Sliding Two Fingers Right",  # 12
-        "Sliding Two Fingers Up",  # 13
-        "Stop Sign",  # 14
-        "Swiping Down",  # 15
-        "Swiping Left",  # 16
-        "Swiping Right",  # 17
-        "Swiping Up",  # 18
-        "Thumb Down",  # 19
-        "Thumb Up",  # 20
-        "Turning Hand Clockwise",  # 21
-        "Turning Hand Counterclockwise",  # 22
-        "Zooming In With Full Hand",  # 23
-        "Zooming In With Two Fingers",  # 24
-        "Zooming Out With Full Hand",  # 25
-        "Zooming Out With Two Fingers"  # 26
-    ]
-
-    elif num_classes == 9: 
-
-        catigories = ["Fall", "SalsaSpin", "Taichi", "WallPushups", "WritingOnBoard", "Archery", "Hulahoop", "Nunchucks", "WalkingWithDog"]
-    
-    elif num_classes == 10:
-
-        catigories = ["Test", "Fall", "SalsaSpin", "Taichi", "WallPushups", "WritingOnBoard", "Archery", "Hulahoop", "Nunchucks", "WalkingWithDog"]
-
-    elif num_classes == 3 :
-
-        catigories = ['Test', "Fall", "Not Fall"]
-
-    elif num_classes == 2:
-
-        catigories = ["Fall", "Not Fall"]
-
-
-    return catigories
-
-
 def main(num_classes):
 
     print("Initializing model...")
@@ -221,11 +167,15 @@ def main(num_classes):
     lineType2 = 2
 
 
-    if num_classes not in [2, 3, 9, 10, 27]:
-        return "Can only handle 2, 3, 9, 10 (Fall) and 27 classes (Gesture)"
+    if CAMERA_FEED:
+        topRightCornerOfText = (5,50)
+        topRightCornerOfText2 = (5,70)
+        fontScale2              = 0.5
+        bottomLeftCornerOfText = (10,150)
+        fontScale = 1
 
-    else:
-        catigories = get_categories(num_classes)
+
+    categories = ['Test', "Fall", "Not Fall"]
 
     cropping = torchvision.transforms.Compose([
         GroupScale(256),
@@ -243,47 +193,33 @@ def main(num_classes):
 
     torch_module = MobileNetV2(n_class=num_classes)
     #print(torch_module.state_dict().keys())
+    model_new = torch.load("./models/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
 
-    if num_classes == 27:
-        if not os.path.exists("mobilenetv2_jester_online.pth.tar"):  # checkpoint not downloaded
-            print('Downloading PyTorch checkpoint...')
-            url = 'https://hanlab.mit.edu/projects/tsm/models/mobilenetv2_jester_online.pth.tar'
-            urllib.request.urlretrieve(url, './mobilenetv2_jester_online.pth.tar')
+    # Fixing new model parameter mis-match
+    state_dict = model_new['state_dict']
+    #print(state_dict.keys())
+
+    from collections import OrderedDict
+    new_state_dict = OrderedDict()
+
+    for k, v in state_dict.items():
+        #name = k[7:] # remove `module.`
+
+        if "module.base_model." in k:
+            name = k.replace("module.base_model.", "")
+
+            if ".net" in name:
+                name = name.replace(".net", "")
+
+
+        elif "module." in k:
+            name = k.replace("module.new_fc.", "classifier.")
     
 
-        torch_module.load_state_dict(torch.load("mobilenetv2_jester_online.pth.tar"))
+        new_state_dict[name] = v
 
-
-    else:
-        
-        model_new = torch.load("./models/5_TSM_w251fall_RGB_mobilenetv2_shift8_blockres_avg_segment8_e25/ckpt.best.pth.tar")
-            #model_new = torch.load("../../pretrained/2cat/ckpt.best.pth.tar")
-
-        # Fixing new model parameter mis-match
-        state_dict = model_new['state_dict']
-        #print(state_dict.keys())
-    
-        from collections import OrderedDict
-        new_state_dict = OrderedDict()
-
-        for k, v in state_dict.items():
-            #name = k[7:] # remove `module.`
-
-            if "module.base_model." in k:
-                name = k.replace("module.base_model.", "")
-
-                if ".net" in name:
-                    name = name.replace(".net", "")
-
-
-            elif "module." in k:
-                name = k.replace("module.new_fc.", "classifier.")
-        
-
-            new_state_dict[name] = v
-
-        # load params
-        torch_module.load_state_dict(new_state_dict)
+    # load params
+    torch_module.load_state_dict(new_state_dict)
 
     # Use GPU if CUDA found
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -298,10 +234,11 @@ def main(num_classes):
 
     if CAMERA_FEED:
         cap = cv2.VideoCapture(1)
+        print("CAMERA")
     else:
-        cap = cv2.VideoCapture('./test_video/test_fall.avi')
-        
-        
+        cap = cv2.VideoCapture(VIDEO_PATH) 
+
+
     # set a lower resolution for speed up
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
@@ -334,7 +271,7 @@ def main(num_classes):
     history_timing = []
     i_frame = -1
     history_for_alerts = []
-    frame_counter = {c:0 for c in catigories}
+    frame_counter = {c:0 for c in categories}
 
     fall_frame_count = 0
     running_preds = []
@@ -345,8 +282,6 @@ def main(num_classes):
         
         i_frame += 1
         _, img = cap.read()  # (480, 640, 3) 0 ~ 255
-
-        print(img)
 
         t1 = time.time()
         img_tran = transform([Image.fromarray(img).convert('RGB')])
@@ -373,7 +308,7 @@ def main(num_classes):
             feat_np -= feat_np.max()
             softmax = np.exp(feat_np) / np.sum(np.exp(feat_np))
             
-            print(np.round(softmax,2))
+            #print(np.round(softmax,2))
 
             if max(softmax) > SOFTMAX_THRES:
                 
@@ -400,9 +335,9 @@ def main(num_classes):
 
         t2 = time.time()
         
-        current_status = catigories[idx]
-        print(f"Prediction @ Frame {index} : {catigories[np.argmax(feat.cpu().detach().numpy())]}")
-        print("Status: " + str(current_status) + "   " + str(idx))
+        current_status = categories[idx]
+        print(f"Prediction @ Frame {index} : {categories[np.argmax(feat.cpu().detach().numpy())]}")
+        print("Status: " + str(current_status))
         
 
         running_preds.append(idx)
@@ -453,16 +388,16 @@ def main(num_classes):
 
         # This is to also how the graph to track the labels
         if TRACK_LABELS:
-            #tracker[catigories[idx]] += 1
-            #tracker = {c:0 for c in catigories}
+            #tracker[categories[idx]] += 1
+            #tracker = {c:0 for c in categories}
             #print(tracker)            
             tracker = None
             tracker = {}
             for i in range(num_classes):                 
-                tracker[catigories[i]] = softmax[i]
+                tracker[categories[i]] = softmax[i]
 
             # Count frames
-            frame_counter[catigories[idx]] += 1
+            frame_counter[categories[idx]] += 1
 
             # Set figures
             fig, (ax1, ax2) = plt.subplots(1,2)
@@ -522,13 +457,34 @@ def main(num_classes):
 if __name__ == "__main__":
     print("Starting... \n")
 
+    parser = argparse.ArgumentParser(description="TSM testing")
+    parser.add_argument('--video', type=str, default=None)
+
+    args = parser.parse_args()
+
+    
+
     SOFTMAX_THRES = 0.8
     HISTORY_LOGIT = False
     REFINE_OUTPUT = False
     WINDOW_NAME = "GESTURE CAPTURE"
     TRACK_LABELS = False
-    CAMERA_FEED = False
+    CAMERA_FEED = True
     SEND_ALERTS = False
+    VIDEO_PATH = ""
+    
+    if args.video is not None:
+        VIDEO_PATH = args.video
+        CAMERA_FEED = False
+
+    else:
+        CAMERA_FEED = True
+
+
+
+    print("VIDEO_PATH = " + VIDEO_PATH)
+    
+    
 
 
     #Modify number of classes here
@@ -543,8 +499,8 @@ if __name__ == "__main__":
 
         message = client.messages.create(
             body='It seems you have fallen. Emergency professionals are on their way',
-            from_='+14154803682',
-            to='+14082195476'
+            from_='',
+            to=''
         )
 
         print(message.sid)
