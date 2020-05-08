@@ -23,7 +23,7 @@ docker run --privileged -v $(pwd):/falling -v /dev/bus/usb:/dev/bus/usb -v /tmp:
 2. The demo script can be run either using the camera feed or using a local video
 
 ```
-python3 main.py --video ./test_video/test_fail.avi
+python3 main.py --video ./test_video/test_fall.avi
 ```
 
 To use the camera, please exclude the `--video` option
