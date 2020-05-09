@@ -2,12 +2,12 @@
 
 ### Docker
 
-Requires `/data/` directory and expects contents to be in `w251fall` subdirectory.
+Requires `/data` directory and expects contents to be in `w251fall` subdirectory.
 
 **Expects that host has NVIDIA GPU & Cuda (tested using Version 10.1).**
 
+Run `docker_build.sh`
 Run `docker_run.sh`
-
 
 ## Data
 

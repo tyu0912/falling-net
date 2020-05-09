@@ -6,11 +6,10 @@ RUN pip install tensorboardX numpy scikit-learn matplotlib pandas tqdm Pillow==6
 RUN pip install jupyterlab
 
 RUN apt-get update
-RUN apt-get install -y ffmpeg vim rename
-
-RUN pip install opencv-python tabulate
+RUN apt-get install -y ffmpeg vim
 
 WORKDIR /workdir
 RUN git clone https://github.com/kevinhanna/temporal-shift-module 
 
 WORKDIR /workdir/temporal-shift-module
+

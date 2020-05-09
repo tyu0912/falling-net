@@ -227,8 +227,6 @@ def main():
                 'best_prec1': best_prec1,
             }, is_best)
 
-            save_model(model, is_best)
-
 
 def train(train_loader, model, criterion, optimizer, epoch, log, tf_writer):
     batch_time = AverageMeter()
@@ -359,11 +357,6 @@ def save_checkpoint(state, is_best):
     if is_best:
         shutil.copyfile(filename, filename.replace('pth.tar', 'best.pth.tar'))
 
-def save_model(model, is_best):
-    filename = '%s/%s/ckpt.model.pth.tar' % (args.root_model, args.store_name)
-    torch.save(model, filename)
-    if is_best:
-        shutil.copyfile(filename, filename.replace('pth.tar', 'best.pth.tar'))
 
 def adjust_learning_rate(optimizer, epoch, lr_type, lr_steps):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
