@@ -2,18 +2,19 @@
 
 ### Docker
 
-Requires `/data` directory and expects contents to be in `w251fall` subdirectory.
+Requires `/data` directory and expects contents to be in `w251fall` subdirectory. Note that `w251fall` denotes the original name of this project during development and so many of the commands and dependent paths are named accordingly. Feel free to change as necessary. 
 
 **Expects that host has NVIDIA GPU & Cuda (tested using Version 10.1).**
 
-Run `docker_build.sh`
-Run `docker_run.sh`
+1) Run `docker_build.sh`
+
+2) Run `docker_run.sh`
 
 ## Data
 
 ### Raw Video Files
 
-Video files should be `avi` files.  Each file should have a single fall.  The files need to be be stored in `/data/w251fall/videos/Fall` for preprocessing.
+Video files should be `avi` files.  Each file should have a single fall.  The files need to be be stored in `/data/w251fall/videos/Fall` for preprocessing. For instance, our dataset can be downloaded here: https://drive.google.com/open?id=1FYGEcwZW5znsF2YEui7XRhOY2-ZgZSbv. Please reference the authors on the main page accordingly if used elsewhere. 
 
 ### Preprocessing
 
