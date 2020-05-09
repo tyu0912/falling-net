@@ -17,7 +17,7 @@ Falls are one of the leading causes of injury in older persons. With around 27,0
 ```
 docker built -t tsm_test1 .
 
-docker run --privileged -v $(pwd):/falling -v /dev/bus/usb:/dev/bus/usb -v /tmp:/tmp -e QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -it falling_net bash
+docker run --privileged -v $(pwd):/falling -v /dev/bus/usb:/dev/bus/usb -v /tmp:/tmp -e QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -it tsm_test1 bash
 ```
 
 2. The demo script can be run either using the camera feed or using a local video
