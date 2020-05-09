@@ -1,4 +1,4 @@
-# W251 - Fall Detection
+# Falling-Net Training
 
 ### Docker
 
@@ -65,3 +65,13 @@ python test_models.py w251fall \
 ### Jupyter Lab
 
 Run `jupyterlab_run.sh`
+
+### Refrences
+
+Scripts from repo below were used as part of the prep:
+
+https://github.com/mit-han-lab/temporal-shift-module
+
+https://github.com/yjxiong/temporal-segment-networks
+
+https://github.com/tyu0912/w251_project
